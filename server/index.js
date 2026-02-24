@@ -6,7 +6,7 @@ const app = express()
 mongoose.connect(process.env.MONGO_URL)
 
 app.use("/", (req, res) => {
-    res.status(200).json({ message: "Task Manager Api Running..." })
+    res.status(200).json({ message: `Task Manager Api Running... in ${process.env.NODE_ENV}` })
 })
 
 mongoose.connection.once("open", () => {

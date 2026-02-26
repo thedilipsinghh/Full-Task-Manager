@@ -5,7 +5,7 @@ module.exports = mongoose.model("user", new mongoose.Schema({
     password: { type: String, required: true },
     mobile: { type: Number, required: true },
 
-    active: { type: Boolean },
+    active: { type: Boolean, default: true },
     role: { type: String, enum: ["admin", "employee"], default: "employee" },
     profilePic: { type: String },
 }, { timestamps: true }))

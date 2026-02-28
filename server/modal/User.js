@@ -11,4 +11,5 @@ module.exports = mongoose.model("user", new mongoose.Schema({
     otp: { type: String },
     otpSendOn: { type: Date },
     accessToken: { type: String },
+    isDelete: { type: Boolean, default: true },
 }, { timestamps: true }))

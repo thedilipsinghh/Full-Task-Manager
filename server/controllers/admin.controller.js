@@ -1,144 +1,147 @@
-const Task = require("../modal/Task")
-const User = require("../modal/User")
+const { isMongoId, isEmail, isMobilePhone } = require("validator")
+const Task = require("../models/Task")
+const User = require("../models/User")
 
-exports.getAllEmployee = async (req, res) => {
+exports.getAllEmployees = async (req, res) => {
     try {
-
-        const result = await User.find({ role: "employee" }).select(
-            "name email password mobile active role isDelete "
-        )
-        res.status(200).json({ message: "Employee Fetch Suceess", result })
+        const result = await User.find({ role: "employee" }).select("name email mobile role active isDelete")
+        res.status(200).json({ message: "employee fetch success", result })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable to Fetch All Employee" })
+        res.status(500).json({ message: "unable to fetch all employee" })
     }
 }
 
 exports.updateEmployee = async (req, res) => {
     try {
         const { eid } = req.params
+        if (!isMongoId(eid)) {
+            return res.status(400).json({ message: "invalid id" })
+        }
+
         let obj = {}
         const { name, email, mobile } = req.body
 
         if (name) {
             obj = { ...obj, name: name }
         }
-
         if (email) {
+            if (!isEmail(email)) {
+                return res.status(400).json({ message: "invalid email" })
+            }
             obj = { ...obj, email }
         }
         if (mobile) {
+            if (!isMobilePhone(mobile, "en-IN")) {
+                return res.status(400).json({ message: "invalid mobile" })
+            }
             obj = { ...obj, mobile }
         }
         if (obj.name || obj.email || obj.mobile) {
             await User.findByIdAndUpdate(eid, obj, { runValidators: true })
         }
-        res.status(200).json({ message: "Employee update Suceess" })
+        res.status(200).json({ message: "employee udpate success" })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable to update  Employee" })
+        res.status(500).json({ message: "unable to update employee" })
     }
 }
-
 exports.toggleEmployeeStatus = async (req, res) => {
     try {
         const { status } = req.body
         if (typeof status !== "boolean") {
-            return res.status(400).json({ message: "Status is Reuired" })
+            return res.status(400).json({ message: "status is required" })
         }
-        const { eid } = req.body
+        const { eid } = req.params
         await User.findByIdAndUpdate(eid, { active: status }, { runValidators: true })
-        res.status(200).json({ message: "Employee status update Suceess" })
+        res.status(200).json({ message: "employee status update success" })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable to status update  Employee" })
+        res.status(500).json({ message: "unable to status update employee" })
     }
 }
-
 exports.DeleteEmployee = async (req, res) => {
     try {
         const { eid } = req.params
-        await User.findByIdAndUpdate(eid, { isDelete: false }, { runValidators: true })
-        res.status(200).json({ message: "Employee delete Suceess" })
+        await User.findByIdAndUpdate(eid, { isDelete: true }, { runValidators: true })
+        res.status(200).json({ message: "employee delete success" })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable to delete  Employee" })
+        res.status(500).json({ message: "unable to delete employee" })
     }
 }
 exports.restoreEmployee = async (req, res) => {
     try {
         const { eid } = req.params
         await User.findByIdAndUpdate(eid, { isDelete: false }, { runValidators: true })
-        res.status(200).json({ message: "Employee Restore Suceess" })
+        res.status(200).json({ message: "employee restore success" })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable to Restore  Employee" })
+        res.status(500).json({ message: "unable to restore employee" })
     }
 }
 exports.permanentDeleteEmployee = async (req, res) => {
     try {
         const { eid } = req.params
         await User.findByIdAndDelete(eid)
-        res.status(200).json({ message: "Employee permanent delete Suceess" })
+        res.status(200).json({ message: "employee delete permanently" })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable to permanent delete  Employee" })
+        res.status(500).json({ message: "unable to delete permanently employee" })
     }
 }
 
 
-// todo controller 
-
 exports.createTask = async (req, res) => {
     try {
-        const { task, desc, priority, due, employee } = req.body
-        if (!task || !desc || !priority || !due || !employee) {
-            return res.status(400).json({ message: "All filed Required" })
+        const { task, desc, priority, employee, due } = req.body
+        if (!task || !desc || !priority || !employee || !due) {
+            return res.status(400).json({ message: "all fields required" })
         }
-        await Task.create({ task, desc, priority, due, employee })
-        res.status(200).json({ message: "Task Create Suceess" })
+        await Task.create({ task, desc, priority, employee, due })
+        res.status(200).json({ message: "task create success" })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable To Task Create " })
+        res.status(500).json({ message: "unable to create task" })
     }
 }
 
 exports.readTask = async (req, res) => {
     try {
-        const result = await Task.find()
-
-        res.status(200).json({ message: "Read task Suceess", result })
+        //                                  👇Left Join
+        const result = await Task.find().populate("employee", "_id name mobile email")
+        res.status(200).json({ message: "task read success", result })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable To Read task " })
+        res.status(500).json({ message: "unable to read task" })
     }
 }
+
 exports.updateTask = async (req, res) => {
     try {
         const { tid } = req.params
-        const { task, desc, priority, due, employee } = req.body
+        const { task, desc, priority, employee, due } = req.body
         const obj = {}
         if (task) obj.task = task
         if (desc) obj.desc = desc
         if (priority) obj.priority = priority
         if (employee) obj.employee = employee
         if (due) obj.due = due
-
         await Task.findByIdAndUpdate(tid, obj, { runValidators: true })
-        res.status(200).json({ message: "update task Suceess" })
+        res.status(200).json({ message: "task update success" })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable To update task " })
+        res.status(500).json({ message: "unable to update task" })
     }
 }
 
 exports.deleteTask = async (req, res) => {
     try {
-        const { tid } = req.paramsl
+        const { tid } = req.params
         await Task.findByIdAndDelete(tid)
-        res.status(200).json({ message: "delete task Suceess" })
+        res.status(200).json({ message: "task delete success" })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Unable To delete task " })
+        res.status(500).json({ message: "unable to delete task" })
     }
 }

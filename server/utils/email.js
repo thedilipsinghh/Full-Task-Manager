@@ -5,16 +5,16 @@ exports.sendEmail = ({ email, subject, message }) => new Promise((resolve, rejec
             service: "gmail",
             auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASS }
         })
+
         transport.sendMail({
             to: email,
             subject,
             html: message
         })
         console.log("email send success")
-        resolve("Emails send Success")
+        resolve("email send success")
     } catch (error) {
         console.log(error)
         reject("unable to send email")
-
     }
 })

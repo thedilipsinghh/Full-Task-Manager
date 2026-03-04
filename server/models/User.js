@@ -6,10 +6,11 @@ module.exports = mongoose.model("user", new mongoose.Schema({
     mobile: { type: String, required: true },
 
     active: { type: Boolean, default: true },
-    role: { type: String, enum: ["admin", "employee"], default: "employee" },
+    role: { type: String, enumn: ["admin", "employee"], default: "employee" },
     profilePic: { type: String },
     otp: { type: String },
     otpSendOn: { type: Date },
     accessToken: { type: String },
-    isDelete: { type: Boolean, default: true },
+    isDelete: { type: Boolean, default: false },
+
 }, { timestamps: true }))

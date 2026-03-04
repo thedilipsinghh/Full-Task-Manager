@@ -1,11 +1,10 @@
+const { getAllEmployees, updateEmployee, toggleEmployeeStatus, DeleteEmployee, createTask, readTask, updateTask, deleteTask, restoreEmployee, permanentDeleteEmployee } = require("../controllers/admin.controller")
 
-const { getAllEmployee, updateEmployee, toggleEmployeeStatus, DeleteEmployee, createTask, readTask, updateTask, deleteTask, restoreEmployee, permanentDeleteEmployee } = require("../controllers/admin.controller.js")
-const { adminProtect } = require("../middlewares/auth.middleware.js")
 
 const router = require("express").Router()
 
 router
-    .get("/employee", getAllEmployee)
+    .get("/employee", getAllEmployees)
     .put("/update-employee/:eid", updateEmployee)
     .put("/toggle-employee-status/:eid", toggleEmployeeStatus)
     .delete("/delete-employee/:eid", DeleteEmployee)

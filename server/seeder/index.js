@@ -1,3 +1,3 @@
-const { seedAdmin } = require("./admin.seeder");
+const { seedAdmin } = require("./admin.seeder")
 
 seedAdmin()

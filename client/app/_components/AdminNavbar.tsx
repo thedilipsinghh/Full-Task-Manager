@@ -1,10 +1,25 @@
 "use client"
+import { useSignoutMutation } from '@/redux/apis/auth.api'
 import { useAppSelector } from '@/redux/store'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React from 'react'
+import { toast } from 'react-toastify'
 
 const AdminNavbar = () => {
+    const router = useRouter()
+    const [signout] = useSignoutMutation()
     const { admin } = useAppSelector(state => state.auth)
+    const handleLogout = async () => {
+        try {
+            await signout().unwrap()
+            toast.success("Logout Success")
+            router.refresh()
+        } catch (error) {
+            console.log(error)
+            toast.error("unable to logout")
+        }
+    }
     return <>
         <nav className="navbar navbar-expand-lg bg-danger navbar-dark">
             <div className="container">
@@ -20,23 +35,15 @@ const AdminNavbar = () => {
                     </div>
                 </div>
                 {
-                    // admin && <div className='dropdown' data-bs-toggle="dropdown">
-                    //     <button className='btn btn-light'>Welcome{admin.name}</button>
-                    //     <div className='drowpdown-menu'>
-                    //         <li className='dropdown-item'></li>
-                    //         <li className='dropdown-item'><li>
-                    //             <li className='dropdown-item'></li>
-                    //         </div>
-                    //     </div>
 
                     admin && <div className="dropdown">
-                        <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button className="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             welcome {admin.name}
                         </button>
                         <ul className="dropdown-menu">
                             <li><a className="dropdown-item" href="#">Action</a></li>
                             <li><a className="dropdown-item" href="#">Another action</a></li>
-                            <li><a className="dropdown-item bg-text" href="#">Logout</a></li>
+                            <li><button onClick={handleLogout} className="dropdown-item text-danger">Logout</button></li>
                         </ul>
                     </div>
                 }

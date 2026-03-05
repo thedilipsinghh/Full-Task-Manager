@@ -1,6 +1,7 @@
 import { APP_URL } from "@/constants/config"
 import { CHANGE_PASSWORD_REQUEST, CHANGE_PASSWORD_RESPONSE, FORGET_PASSWORD_REQUEST, FORGET_PASSWORD_RESPONSE, REGISTER_EMPLOYEE_REQUEST, REGISTER_EMPLOYEE_RESPONSE, SEND_OTP_REQUEST, SEND_OTP_RESPONSE, SIGNIN_REQUEST, SIGNIN_RESPONSE, VERIFY_OTP_REQUEST, VERIFY_OTP_RESPONSE } from "@/types/Auth"
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
+import { removeStorage, setStorage } from "../utils/authStorages"
 
 export const authApi = createApi({
     reducerPath: "authApi",
@@ -19,6 +20,10 @@ export const authApi = createApi({
                         body: userData
                     }
                 },
+                transformResponse: (data: SIGNIN_RESPONSE) => {
+                    setStorage(data)
+                    return data
+                }
             }),
             registerEmployee: builder.mutation<REGISTER_EMPLOYEE_RESPONSE, REGISTER_EMPLOYEE_REQUEST>({
                 query: userData => {
@@ -36,6 +41,9 @@ export const authApi = createApi({
                         method: "POST",
                     }
                 },
+                transformResponse: () => {
+                    removeStorage()
+                }
             }),
             sendOtp: builder.mutation<SEND_OTP_RESPONSE, SEND_OTP_REQUEST>({
                 query: userData => {

@@ -6,7 +6,7 @@ import { removeStorage, setStorage } from "../utils/authStorages"
 export const authApi = createApi({
     reducerPath: "authApi",
     baseQuery: fetchBaseQuery({
-        baseUrl: `${APP_URL}/api/auth`,
+        baseUrl: `/api/auth`,
         credentials: "include"
     }),
     tagTypes: [],

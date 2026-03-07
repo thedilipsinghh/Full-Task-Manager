@@ -41,8 +41,8 @@ const AdminNavbar = () => {
                             welcome {admin.name}
                         </button>
                         <ul className="dropdown-menu">
-                            <li><a className="dropdown-item" href="#">Action</a></li>
-                            <li><a className="dropdown-item" href="#">Another action</a></li>
+                            <li><Link className="dropdown-item" href="#">Action</Link></li>
+                            <li><Link className="dropdown-item" href="#">Another action</Link></li>
                             <li><button onClick={handleLogout} className="dropdown-item text-danger">Logout</button></li>
                         </ul>
                     </div>

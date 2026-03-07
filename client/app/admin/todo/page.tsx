@@ -4,12 +4,16 @@ import { useGetEmployeesQuery, useTodoCreateMutation, useTodoReadQuery, useTodoU
 import { TODO_CREATE_REQUEST } from '@/types/Admin'
 import { zodResolver } from '@hookform/resolvers/zod'
 import clsx from 'clsx'
-import React from 'react'
+import { getItem } from 'data-fns'
+import { format, isAfter } from 'date-fns'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import z, { date } from 'zod'
 
 const AdminTodo = () => {
+    const [selected, setselected] = useState<string | null>(null)
+
     const { data: empData } = useGetEmployeesQuery()
     const { data } = useTodoReadQuery()
     const [createTodo] = useTodoCreateMutation()
@@ -19,7 +23,7 @@ const AdminTodo = () => {
         desc: z.string().min(1),
         priority: z.string().min(1),
         employee: z.string().min(1),
-        due: z.date().min(1),
+        due: z.string(),
 
     }) satisfies z.ZodType<TODO_CREATE_REQUEST>
 
@@ -30,7 +34,7 @@ const AdminTodo = () => {
             desc: "",
             priority: "",
             employee: "",
-            due: new Date(),
+            due: "",
 
 
         },
@@ -38,9 +42,23 @@ const AdminTodo = () => {
     })
     const handleTask = async (data: TODO_CREATE_REQUEST) => {
         try {
-            await createTodo(data).unwrap()
-            toast.success("task created succefully")
-            reset()
+            if (selected) {
+                await updateTodo({ ...data, _id: selected }).unwrap()
+                toast.success("Todo Update Success")
+                reset({
+                    task: "",
+                    desc: "",
+                    due: "",
+                    employee: "",
+                    priority: "",
+
+                })
+                setselected(null)
+            } else {
+                await createTodo(data).unwrap()
+                toast.success("task created succefully")
+                reset()
+            }
 
         } catch (error) {
             console.log(error);
@@ -53,6 +71,16 @@ const AdminTodo = () => {
         "is-invalid": errors && errors[key],
         "is-valid": dirtyFields[key] && !errors[key],
     })
+
+    const handleEdit = (data: any) => {
+        reset({
+            task: data.task,
+            desc: data.desc,
+            priority: data.priority,
+            employee: data.employee._id,
+            due: format(data.due, "yyyy-mm-dd")
+        })
+    }
     return <>
         <div className="container">
             <div className="row">
@@ -67,6 +95,10 @@ const AdminTodo = () => {
                                 </div>
                                 <div>
                                     <input {...register("desc")} type="text" placeholder='Enter desc' className={handleClassess("desc")} />
+                                    <div className='invalid-feedback'></div>
+                                </div>
+                                <div>
+                                    <input {...register("due")} type="date" placeholder='Enter due' className={handleClassess("due")} />
                                     <div className='invalid-feedback'></div>
                                 </div>
                                 <div>
@@ -88,7 +120,12 @@ const AdminTodo = () => {
                                         <option value="low">low</option>
                                     </select>
                                 </div>
-                                <button type='submit' className='btn btn-primary w-100'>Add</button>
+                                {
+                                    selected
+                                        ? <button type='submit' className='btn btn-primary w-100'>Update</button>
+                                        : <button type='submit' className='btn btn-primary w-100'>Add</button>
+                                }
+
                             </form>
                         </div>
                     </div>
@@ -105,24 +142,30 @@ const AdminTodo = () => {
                         <th>priority</th>
                         <th>employee</th>
                         <th>complete</th>
+                        <th>due</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {
-                        data.result.map(item => <tr key={item._id}>
+                        data.result.map(item => <tr key={item._id} className={`${isAfter(item.due, item.completeDate || new Date()) ? "table-success" : "table-danger"}`}>
                             <td>{item._id}</td>
                             <td>{item.task}</td>
                             <td>{item.desc}</td>
                             <td>{item.priority}</td>
                             <td>{item.employee.name}</td>
                             <td>{item.complete ? "Yes" : "No"}</td>
+                            <td>{item.due?.toLocaleString()}</td>
                             <td>
                                 {
                                     item.complete
                                         ? <button type='button' className='btn btn-success btn-sm'>Complete</button>
                                         : <button type='button' className='btn btn-danger btn-sm'>In-Complete</button>
                                 }
+                                {!item.complete && <button onClick={() => {
+                                    handleEdit(item)
+                                    setselected(item._id)
+                                }} className='btn btn-sm btn-outline-warning ms-2'> <i className='bi bi-pencil'></i> </button>}
                             </td>
                         </tr>
                         )
